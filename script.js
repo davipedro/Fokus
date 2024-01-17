@@ -9,9 +9,16 @@ const buttons = document.querySelectorAll('.app__card-button');
 const musicButton = document.querySelector('#alternar-musica');
 const audio = new Audio('./sons/luna-rise-part-one.mp3');
 const startPauseBt = document.querySelector('#start-pause');
+const iniciarOuPausarBt = document.querySelector('#start-pause span');
+const startPauseImage = startPauseBt.querySelector('img');
+const timerOnScreen = document.querySelector('#timer');
+
+const TimerFinishedAudio = new Audio('./sons/beep.mp3');
+const TimerStoppedAudio = new Audio('./sons/pause.mp3');
+const TimerStartAudio = new Audio('./sons/play.wav');
 audio.loop = true;
 
-let time = 10;
+let time = 1500;
 /**
  * IntervalId é um ID retornado pelo setInterval para que seja 
  * possível fazer alterações no fluxo de execução de um determinado interval,
@@ -21,21 +28,25 @@ let time = 10;
 let intervalId = null;
 
 focoBt.addEventListener('click', () => {
+    time = 1500;
     changeContext('foco');
     focoBt.classList.add('active');
 });
 
 curtoBt.addEventListener('click', () => {
+    time = 300;
     changeContext('descanso-curto');
     curtoBt.classList.add('active');
 });
 
 longoBt.addEventListener('click', () => {
+    time = 900;
     changeContext('descanso-longo');
     longoBt.classList.add('active');
 });
 
 function changeContext(context){
+    showTime();
     buttons.forEach(button => {
         button.classList.remove('active');
     });
@@ -72,23 +83,39 @@ startPauseBt.addEventListener('click', startAndPause);
 
 function startAndPause() {
     if(intervalId){
+        TimerStoppedAudio.play();
+        startPauseImage.setAttribute('src', './imagens/play_arrow.png')
         reset();
         return;
     }
-    intervalId = setInterval(contagemRegressiva, 1000);
+    TimerStartAudio.play();
+    startPauseImage.setAttribute('src', './imagens/pause.png')
+    intervalId = setInterval(countdown, 1000);
+    iniciarOuPausarBt.textContent = "Pausar";
 }
 
-const contagemRegressiva = () => {
+const countdown = () => {
     if(time == 0){
         alert('Tempo finalizado!');
+        TimerFinishedAudio.play();
         reset();
         return;
     }
     time--;
-    console.log('Temporizador: ' + time);
+    showTime();
 }
 
 function reset() {
     clearInterval(intervalId);
+    iniciarOuPausarBt.textContent = "Começar";
     intervalId = null;
 }
+
+function showTime(){
+    const timeToShow = new Date(time * 1000);
+    const timeFormatted = timeToShow.toLocaleTimeString('pt-BR', {
+        minute: '2-digit', second: '2-digit'});
+    timerOnScreen.innerHTML = `${timeFormatted}`;
+}
+
+showTime();
